@@ -1,0 +1,17 @@
+aiofiles
+aiodns
+better-profanity
+discord.py
+googletrans
+openai
+praw
+psutil
+python-dotenv
+wavelink
+lyricsgenius
+pynacl
+typing_extensions
+yt-dlp
+google-auth-oauthlib
+google-auth-httplib2
+flask

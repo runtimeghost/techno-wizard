@@ -1,0 +1,15 @@
+__pycache__
+.env
+todo.txt
+.idea
+test.py
+.vscode
+.cache 
+Lavalink.jar
+logs 
+.gitpod.yml
+application.yml
+token.json
+program_logs.log
+lavalogs.log
+credentials.json
