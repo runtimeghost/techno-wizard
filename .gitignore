@@ -13,3 +13,4 @@ token.json
 program_logs.log
 lavalogs.log
 credentials.json
+*.pem

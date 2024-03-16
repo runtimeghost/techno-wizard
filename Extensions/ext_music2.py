@@ -91,7 +91,7 @@ class Music(commands.Cog):
 
 	async def connect_voice_node(self):
 		node = wavelink.Node(
-			uri="http://0.0.0.0:2333",
+			uri="http://localhost:2333",
 			password="youshallnotpass",
 			)
 		self.wavenode = await wavelink.Pool.connect(
@@ -872,6 +872,7 @@ Use {ctx.prefix}queue to know the index of the song that you want to remove!")
 						) if len(embs) > 1 else discord.utils.MISSING
 				)
 
+
 	@commands.hybrid_command(
 			aliases=["autoreplay"],
 			usage='loop'
@@ -969,6 +970,7 @@ Links expire {discord.utils.format_dt(datetime.datetime.now()+datetime.timedelta
 			return await ctx.send(":x: Not playing any song currently!")
 		await ctx.voice_client.set_filter(wavelink.Filter(rotation=wavelink.Rotation(0.75)))
 		return await ctx.send(":white_check_mark: Enabled stereo mode!")
+
 
 	@commands.hybrid_command(
 			aliases=['rf', 'nofilters', 'disablefilters'],

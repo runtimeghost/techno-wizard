@@ -2,7 +2,7 @@
 
 import discord
 from asyncio import TimeoutError
-from random import choice, randrange
+from random import randrange
 from discord.ext import commands
 from bot_ui import RPSChoice
 

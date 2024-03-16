@@ -5,7 +5,7 @@
 from os import remove, curdir, path, listdir, mkdir
 from io import BytesIO
 from shutil import rmtree
-from json import dumps, loads, dump, load
+from json import dumps, dump, load
 from random import choices
 from string import ascii_letters
 from contextlib import suppress
@@ -18,7 +18,6 @@ from google_auth_oauthlib.flow import Flow
 from aiohttp import FormData, ClientSession, ClientTimeout, client_exceptions
 from aiofiles import open as aopen
 from asyncio import sleep as asleep
-from requests import post
 import discord
 
 from bot_ui import ConfirmButtons, CancelMirror
@@ -129,6 +128,7 @@ class MirrorableFile:
         with suppress(FileNotFoundError):
             remove(self.filepath)
 
+
     def update_progressbar(self, tillnow):
         pos = round(tillnow / self.total_size * 25)
         tillnow_mb = round(tillnow / pow(1024, 2), 2)
@@ -140,23 +140,24 @@ class MirrorableFile:
 File name: {self.name}
 """
         return desc
-    
+
+
     async def create_folder(self):
         headers = {
             "Authorization": f"Bearer {refreshed_drive_creds(self.ctx.author.id).token}",
             "User-agent": "Mozilla/5.0 (X11; Linux x86_64; rv:39.0) Gecko/20100101 Firefox/39.0"
         }
-        filemeta = {"name": "TechnoWizard-Mirrors", "mimeType": 'application/vnd.google-apps.folder'}
-        async with self.client.session.post("https://www.googleapis.com/upload/drive/v3/files", headers=headers, data=dumps(filemeta)) as resp:
+        filemeta = {"name": "TechnoWizard-Mirrors", "mimeType": "application/vnd.google-apps.folder"}
+        async with self.session.post("https://www.googleapis.com/drive/v3/files", headers=headers, json=filemeta) as resp:
             folder = await resp.json()
         folder_id = folder.get('id')
         with open(f'{curdir}/database/folders.json', 'r') as f:
             folders = load(f)
         folders[self.ctx.author.id] = folder_id
-        with open(f'{curdir}/database/folders.json') as f:
+        with open(f'{curdir}/database/folders.json', 'w') as f:
             dump(folders, f, indent=4)
         perms = {'role': 'reader', 'type': 'anyone'}
-        await self.client.session.post(f'https://www.googleapis.com/drive/v3/files/{folder_id}/permissions', headers=headers, data=dumps(perms))
+        await self.session.post(f'https://www.googleapis.com/drive/v3/files/{folder_id}/permissions', headers=headers, json=perms)
         return folder
 
 
@@ -178,8 +179,8 @@ File name: {self.name}
             folder_ids = load(f)
         user_folder = folder_ids.get(self.ctx.author.id)
         if not user_folder:
-            user_folder = await self.get_folder_from_drive().get('id')
-        self.drive_folder = user_folder
+            user_folder = await self.get_folder_from_drive()
+        self.drive_folder = user_folder.get('id')
         return self.drive_folder
 
     async def send_existing(self, drive_file_id):
@@ -369,7 +370,7 @@ File name: {self.name}
         emb.description = f""":white_check_mark: {self.ctx.author.mention} File successfully mirrored
 File: `{self.uploaded_file_info.get("name")}`
 """
-        emb.insert_field_at(1, name="File Type", value=self.uploaded_file_info.get("mimeType"))
+        emb.insert_field_at(1, name="File Type", value=self.uploaded_file_info.get("mimeType") or "<unknown>")
         view = discord.ui.View(timeout=None)
         view.add_item(discord.ui.Button(
             label="Download",
@@ -388,7 +389,8 @@ File: `{self.uploaded_file_info.get("name")}`
             "Authorization": f"Bearer {refreshed_drive_creds(self.ctx.author.id).token}",
             "User-agent": "Mozilla/5.0 (X11; Linux x86_64; rv:39.0) Gecko/20100101 Firefox/39.0"
             }
-        filemeta = {"parents": ["1jf4CeBktLE7nDQFSatybjcSgkLrYCSwD"]}
+        folder_id = await self.get_folder_id()
+        filemeta = {"parents": [folder_id]}
         async with self.session.post(
             f"https://www.googleapis.com/drive/v3/files/{self.drive_id}/copy",
             data=dumps(filemeta),
@@ -461,6 +463,7 @@ class MirrorFiles(commands.Cog):
     @commands.hybrid_command(usage='login')
     @commands.dm_only()
     async def login(self, ctx):
+        """Login to grant access to your google drive"""
         if path.exists(f'{curdir}/database/drive_creds/{ctx.author.id}.json'):
             return await ctx.send(":ballot_box_with_check: You are already logged in to google drive. Use `/logout` to logout.")
         flow = Flow.from_client_secrets_file("credentials.json", SCOPES, redirect_uri='http://redirectmeto.com/http://localhost:1080')
@@ -479,9 +482,11 @@ class MirrorFiles(commands.Cog):
     @commands.hybrid_command(usage='logout')
     @commands.dm_only()
     async def logout(self, ctx):
+        """Logout and revoke access from your google drive account"""
         if not path.exists(f'{curdir}/database/drive_creds/{ctx.author.id}.json'):
             return await ctx.send(f"You are not logged in! Please use `/login` to start login session")
         else:
+            remove(f'{curdir}/database/drive_creds/{ctx.author.id}.json')
             return await ctx.send("Logged out from drive. :ballot_box_with_check:")
 
     @commands.hybrid_command(
@@ -564,7 +569,7 @@ class MirrorFiles(commands.Cog):
     async def cancel(self, ctx, *, file_id: str=""):
         if not file_id:
             # Don't know what to close :) 
-            return await ctx.send(":x: You did not provide any file id! Please try again.")
+            return await ctx.send(":x: You did not provide any file id! Please try again with a file id.")
         try:
             file_obj = mirror_tasks[file_id]
             if file_obj.ctx.author not in (ctx.author, self.client.owner, ctx.guild.owner):
@@ -648,7 +653,7 @@ async def setup(bot):
     if not path.exists(f"{curdir}/downloads"):
         mkdir(f"{curdir}/downloads")
     auth_app_thread.start()
-    MirrorFiles.session = ClientSession(timeout=ClientTimeout(total=5*60*60))
+    MirrorFiles.session = ClientSession(timeout=ClientTimeout(total=2*60*60))
     await bot.add_cog(MirrorFiles(bot))
 
 
