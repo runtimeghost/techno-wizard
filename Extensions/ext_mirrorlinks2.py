@@ -466,7 +466,7 @@ class MirrorFiles(commands.Cog):
         """Login to grant access to your google drive"""
         if path.exists(f'{curdir}/database/drive_creds/{ctx.author.id}.json'):
             return await ctx.send(":ballot_box_with_check: You are already logged in to google drive. Use `/logout` to logout.")
-        flow = Flow.from_client_secrets_file("credentials.json", SCOPES, redirect_uri='http://redirectmeto.com/http://localhost:1080')
+        flow = Flow.from_client_secrets_file("credentials.json", SCOPES, redirect_uri='http://redirectmeto.com/https://172.208.72.42:1080')
         auth_flows[ctx.author.id] = flow
         embed = discord.Embed(
             title='Drive Login',
