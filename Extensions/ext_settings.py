@@ -82,7 +82,7 @@ class Settings(commands.Cog):
 
     @bots_settings.command(name="changeprefix", aliases=['c-p', 'prefix', 'cp', 'new-prefix'], description='Used to change prefix')
     @commands.has_permissions(manage_channels=True)
-    async def change_prefix(self, ctx, new_prefix: str = None):
+    async def change_prefix(self, ctx, new_prefix: str|None = None):
         """Change the bot's prefix"""
         if new_prefix is None:
             prefix = ctx.prefix
@@ -96,7 +96,7 @@ for the bot!\nAliases: 'changeprefix', 'cp', 'c-p'\n```""")
             prefix[str(ctx.guild.id)] = new_prefix
             with open("./database/prefixes.json", 'w') as prefix_file:
                 dump(prefix, prefix_file, indent=8)
-            return await ctx.send(f":white_check_mark: Prefix set to`\t`{new_prefix}")
+            return await ctx.send(f":white_check_mark: Prefix set to: {new_prefix}")
         else:
             return await ctx.send(":warning: Prefix length cannot be more than 5 characters!")
 
