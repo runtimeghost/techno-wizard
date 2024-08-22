@@ -410,7 +410,7 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 		else:
 			await ctx.typing()
 		try:
-			yttracks: wavelink.Search = await wavelink.Playable.search(search_term)
+			yttracks: wavelink.Search = await wavelink.Playable.search(search_term, source=wavelink.TrackSource.YouTube)
 		except wavelink.LavalinkLoadException as e:
 			return await ctx.send(f":x: {e}")
 		if not yttracks:
@@ -508,7 +508,7 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 	# 	if not ctx.interaction:
 	# 		await ctx.typing()
 	# 	try:
-	# 		result = await wavelink.Playable.search(song_name)
+	# 		result = await wavelink.Playable.search(song_name, source=wavelink.TrackSource.YouTube)
 	# 	except wavelink.LavalinkLoadException as e:
 	# 		return await ctx.send(f":x: {e}")
 	# 	if not result:

@@ -21,7 +21,7 @@ from bot_ui import PageButtons
 import traceback
 from time import time
 import math
-from os import environ, listdir, chdir, path, name as kernel
+from os import environ, listdir, chdir, path, name as os_name
 import typing
 from json import load,  dump
 import discord
@@ -31,12 +31,12 @@ from dotenv import load_dotenv
 import contextlib
 from textwrap import indent
 import logging
-from asyncio import sleep as asleep, set_event_loop_policy
+from asyncio import sleep as asleep
 # import subprocess
 # from threading import Thread
 
-if kernel=='nt':
-	from asyncio import WindowsSelectorEventLoopPolicy
+if os_name=='nt':
+	from asyncio import set_event_loop_policy, WindowsSelectorEventLoopPolicy
 	set_event_loop_policy(WindowsSelectorEventLoopPolicy())
 
 load_dotenv()
