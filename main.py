@@ -31,11 +31,12 @@ from dotenv import load_dotenv
 import contextlib
 from textwrap import indent
 import logging
-from asyncio import sleep as asleep, set_event_loop_policy, WindowsSelectorEventLoopPolicy
+from asyncio import sleep as asleep, set_event_loop_policy
 # import subprocess
 # from threading import Thread
 
 if kernel=='nt':
+	from asyncio import WindowsSelectorEventLoopPolicy
 	set_event_loop_policy(WindowsSelectorEventLoopPolicy())
 
 load_dotenv()
