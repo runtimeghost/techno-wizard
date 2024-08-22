@@ -4,13 +4,13 @@
 import calendar
 from re import match
 import contextlib
-from math import ceil
+from bot_ui import PageButtons
 import psutil
 from typing import Optional
 import better_profanity
 from json import loads
 import praw
-from random import choice, randint
+from random import randint
 import discord
 from discord.ext import commands
 import time
@@ -19,27 +19,26 @@ import googletrans
 from os import environ
 import platform
 from endecrypt import encode, decode
-import openai
-from bot_ui import PageButtons
+# import openai
 
 
 load_dotenv()
 
 better_profanity.profanity.load_censor_words()
-openai.api_key = environ.get("OPENAI_API_KEY")
+# openai.api_key = environ.get("OPENAI_API_KEY")
 class Extras(commands.Cog):
 
 	def __init__(self, client):
 		self.client = client
 		# self.bid = environ.get("brain_id")
 		# self.api = environ.get("brain_key")
-		self.reddit = praw.Reddit(
-			client_id=environ.get('REDDIT_ID'), 
-			client_secret=environ.get('REDDIT_SECRET'),
-			user_agent=f"script:{environ.get('REDDIT_ID')}:v0.1.0 (by u/snakexenzia01)",
-			username="snakexenzia01",
-			password=environ.get('REDDIT_PASSWORD')
-		)
+		# self.reddit = praw.Reddit(
+		# 	client_id=environ.get('REDDIT_ID'), 
+		# 	client_secret=environ.get('REDDIT_SECRET'),
+		# 	user_agent=f"script:{environ.get('REDDIT_ID')}:v0.1.0 (by u/snakexenzia01)",
+		# 	username="snakexenzia01",
+		# 	password=environ.get('REDDIT_PASSWORD')
+		# )
 		self.alpha = """zA<9yB(x8'C[wD@v7E`uF-tG\\6&sH*r,IqJ}p5$KoLn)M>m.Nl%4O~kP?jQi:R3!hS{g+Tf"Ue2/Vd;Wc_1Xb#Y]a0Z"""  # the super secret Algorithm xD
 		self.translator = googletrans.Translator()
 
@@ -51,8 +50,7 @@ class Extras(commands.Cog):
 		if isinstance(msg.channel, discord.DMChannel):
 			if len(msg.content) > 1903:
 				return
-			else:
-				message = str(msg.content)
+			message = str(msg.content)
 			if match(pattern="(0|1){1,}", string=message):
 				text = decode(message, "binary")
 				decoded_emb = discord.Embed(
@@ -82,28 +80,28 @@ class Extras(commands.Cog):
 							return await msg.channel.send(embed=decrypted_emb)
 
 
-	@commands.hybrid_command(
-		name="meme",
-		aliases=['memes', "funpost", "shitpost"],
-		usage="meme"
-		)
-	@commands.guild_only()
-	async def memes_reddit(self, ctx: commands.Context):
-		"""A random post from reddit."""
-		_type_ = "meme"
-		subred = self.reddit.subreddit(_type_)
-		await ctx.send("Getting some cheesy posts...")
-		sub_func = choice((subred.hot, subred.top))
-		subs = tuple(sub for sub in sub_func(limit=25))
-		meme = choice(subs)
-		meme_emb = discord.Embed(
-			title=meme.title,
-			color=discord.Color.blue()
-		)
-		meme_emb.set_image(url=meme.url)
-		meme_emb.set_footer(text=str(self.client.user.name))
-		meme_emb.timestamp = discord.utils.utcnow()
-		await ctx.send(embed=meme_emb)
+	# @commands.hybrid_command(
+	# 	name="meme",
+	# 	aliases=['memes', "funpost", "shitpost"],
+	# 	usage="meme"
+	# 	)
+	# @commands.guild_only()
+	# async def memes_reddit(self, ctx: commands.Context):
+	# 	"""A random post from reddit."""
+	# 	_type_ = "meme"
+	# 	subred = self.reddit.subreddit(_type_)
+	# 	await ctx.send("Getting some cheesy posts...")
+	# 	sub_func = choice((subred.hot, subred.top))
+	# 	subs = tuple(sub for sub in sub_func(limit=25))
+	# 	meme = choice(subs)
+	# 	meme_emb = discord.Embed(
+	# 		title=meme.title,
+	# 		color=discord.Color.blue()
+	# 	)
+	# 	meme_emb.set_image(url=meme.url)
+	# 	meme_emb.set_footer(text=str(self.client.user.name))
+	# 	meme_emb.timestamp = discord.utils.utcnow()
+	# 	await ctx.send(embed=meme_emb)
 
 
 # 	@commands.hybrid_command(name="languages", aliases=["language", "lang", "langs"], description="Shows available languages that a text can be translated to.")
@@ -163,7 +161,7 @@ class Extras(commands.Cog):
 	@commands.guild_only()
 	async def quote_(self, ctx: commands.Context):
 		"""Sends a random quote!"""
-		# Credit goes to ZenQuotes. Thank you for developing this useful API.
+		# Credit goes to ZenQuotes. Thank you for developing this API.
 		async with self.client.client_session.get("https://zenquotes.io/api/random") as response:
 			formt =  loads(await response.text())
 		quote = formt[0]["q"]
@@ -184,106 +182,106 @@ class Extras(commands.Cog):
 		joke = f"\n{joke_json['setup']}\n-{joke_json['punchline']}\n"
 		return await ctx.send(f"```\n{joke}\n```")
 
-	@commands.hybrid_command(
-		name="image",
-		aliases=["img", "generate_img", "generate_photo", "photo", "images", "imgs", "illustrate"],
-		usage="image <description of your imgaination>"
-		)
-	@discord.app_commands.describe(
-		imagination="Imagine something and give a description of it",
-		count="Number of images to generate (maximum 4)"
-		)
-	@commands.guild_only()
-	async def image_illustration(self, ctx: commands.Context, count: Optional[int]=0, *, imagination: str=""):
-		"""Generates an image  based on a given description of any imagination!"""
-		if not imagination:
-			return await ctx.send(":x: Please try again providing a proper description of your imagination!")
-		count = ceil(count) or 1
-		if not (0 < count < 5):
-			count = 1
-		imagination = discord.utils.remove_markdown(imagination, ignore_links=True)[:999] #| Generating image by OpenAI (maximum text length is 1000)
-		message = await ctx.send("Generating Please wait....")
-		try:
-			image_info = openai.Image.create(
-			prompt=imagination,
-			n=count,
-			size="1024x1024"
-		)
-		except openai.InvalidRequestError as err:
-			return await message.edit(content=f":x: {str(err)}")
-		img_data = image_info["data"]
-		img_embeds = []
-		x = 0
-		for data in img_data:
-			x += 1
-			img_embeds.append(
-				discord.Embed(
-					title=f"Generated Image {x}",
-					description=f"Requested by {ctx.author.mention}",
-					color=discord.Colour.random(),
-					timestamp=discord.utils.utcnow()
-				).set_image(url=data['url']).set_footer(
-						text=f"{self.client.user.name} - Powered by DALL-E of OpenAI.",
-						icon_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStavujZPYSE1sXkTWL9y0pkVClUxU_90wzTQ&usqp=CAU"
-					)
-			)
-		if len(img_embeds) > 1:
-			await message.edit(content="Done", embeds=img_embeds)
-		else:
-			await message.edit(content="Done", embed=img_embeds[0])
+	# @commands.hybrid_command(
+	# 	name="image",
+	# 	aliases=["img", "generate_img", "generate_photo", "photo", "images", "imgs", "illustrate"],
+	# 	usage="image <description of your imgaination>"
+	# 	)
+	# @discord.app_commands.describe(
+	# 	imagination="Imagine something and give a description of it",
+	# 	count="Number of images to generate (maximum 4)"
+	# 	)
+	# @commands.guild_only()
+	# async def image_illustration(self, ctx: commands.Context, count: Optional[int]=0, *, imagination: str=""):
+	# 	"""Generates an image  based on a given description of any imagination!"""
+	# 	if not imagination:
+	# 		return await ctx.send(":x: Please try again providing a proper description of your imagination!")
+	# 	count = ceil(count) or 1
+	# 	if not (0 < count < 5):
+	# 		count = 1
+	# 	imagination = discord.utils.remove_markdown(imagination, ignore_links=True)[:999] #| Generating image by OpenAI (maximum text length is 1000)
+	# 	message = await ctx.send("Generating Please wait....")
+	# 	try:
+	# 		image_info = openai.Image.create(
+	# 		prompt=imagination,
+	# 		n=count,
+	# 		size="1024x1024"
+	# 	)
+	# 	except openai.InvalidRequestError as err:
+	# 		return await message.edit(content=f":x: {str(err)}")
+	# 	img_data = image_info["data"]
+	# 	img_embeds = []
+	# 	x = 0
+	# 	for data in img_data:
+	# 		x += 1
+	# 		img_embeds.append(
+	# 			discord.Embed(
+	# 				title=f"Generated Image {x}",
+	# 				description=f"Requested by {ctx.author.mention}",
+	# 				color=discord.Colour.random(),
+	# 				timestamp=discord.utils.utcnow()
+	# 			).set_image(url=data['url']).set_footer(
+	# 					text=f"{self.client.user.name} - Powered by DALL-E of OpenAI.",
+	# 					icon_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStavujZPYSE1sXkTWL9y0pkVClUxU_90wzTQ&usqp=CAU"
+	# 				)
+	# 		)
+	# 	if len(img_embeds) > 1:
+	# 		await message.edit(content="Done", embeds=img_embeds)
+	# 	else:
+	# 		await message.edit(content="Done", embed=img_embeds[0])
 
 
-	@image_illustration.error
-	async def illustration_err(self, ctx, err):
-		if isinstance(err, discord.DiscordException):
-			await ctx.send("An unknown error occurred! Please try again later ....")
-		await self.client.owner.send(err)
+	# @image_illustration.error
+	# async def illustration_err(self, ctx, err):
+	# 	if isinstance(err, discord.DiscordException):
+	# 		await ctx.send("An unknown error occurred! Please try again later ....")
+	# 	await self.client.owner.send(err)
 
-	@commands.hybrid_command(
-		name="math",
-		aliases=["m", "calculate", "calc", "solve", "mathematics"],
-		usage="math <description of the mathematical problem>"
-	)
-	@discord.app_commands.describe(problem="The specific math question.")
-	@commands.guild_only()
-	async def math_solve(self, ctx: commands.Context, *, problem: str=""):
-		"""Solves a given math problem and shows the result!"""
-		# Uses OpenAI api to solve any math problem (max text length is 2048)
-		if not problem:
-			return await ctx.send(":x: Please try again providing a proper description of your math problem!" )
-		problem = discord.utils.remove_markdown(problem)[:2047]
-		message = await ctx.send("Performing Mathematical operations...` ")
-		solved_math = openai.ChatCompletion.create(
-			model="gpt-3.5-turbo",
-			max_tokens=2048,
-			temperature=0.8,
-			stop=None,
-			n=1,
-			messages=[
-				{
-					'role': 'system',
-					'content': 'You are a smart AI math solver and will act like \
-a math problem solver that explains solution of a given math problem.'},
-				{'role': 'user', 'content': problem}
-			]
-		)
-		math_embed = discord.Embed(
-			title="Math Solution",
-			description=f"\n```\n{solved_math['choices'][0]['message']['content'][-2000:]}\n```",
-			color=discord.Colour.random(),
-			timestamp=discord.utils.utcnow()
-		)
-		math_embed.set_footer(
-			text=f"{self.client.user.name} - Powered by OpenAI.",
-			icon_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStavujZPYSE1sXkTWL9y0pkVClUxU_90wzTQ&usqp=CAU"
-			)
-		await message.edit(content="Done", embed=math_embed)
+# 	@commands.hybrid_command(
+# 		name="math",
+# 		aliases=["m", "calculate", "calc", "solve", "mathematics"],
+# 		usage="math <description of the mathematical problem>"
+# 	)
+# 	@discord.app_commands.describe(problem="The specific math question.")
+# 	@commands.guild_only()
+# 	async def math_solve(self, ctx: commands.Context, *, problem: str=""):
+# 		"""Solves a given math problem and shows the result!"""
+# 		# Uses OpenAI api to solve any math problem (max text length is 2048)
+# 		if not problem:
+# 			return await ctx.send(":x: Please try again providing a proper description of your math problem!" )
+# 		problem = discord.utils.remove_markdown(problem)[:2047]
+# 		message = await ctx.send("Performing Mathematical operations...` ")
+# 		solved_math = openai.ChatCompletion.create(
+# 			model="gpt-3.5-turbo",
+# 			max_tokens=2048,
+# 			temperature=0.8,
+# 			stop=None,
+# 			n=1,
+# 			messages=[
+# 				{
+# 					'role': 'system',
+# 					'content': 'You are a smart AI math solver and will act like \
+# a math problem solver that explains solution of a given math problem.'},
+# 				{'role': 'user', 'content': problem}
+# 			]
+# 		)
+# 		math_embed = discord.Embed(
+# 			title="Math Solution",
+# 			description=f"\n```\n{solved_math['choices'][0]['message']['content'][-2000:]}\n```",
+# 			color=discord.Colour.random(),
+# 			timestamp=discord.utils.utcnow()
+# 		)
+# 		math_embed.set_footer(
+# 			text=f"{self.client.user.name} - Powered by OpenAI.",
+# 			icon_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStavujZPYSE1sXkTWL9y0pkVClUxU_90wzTQ&usqp=CAU"
+# 			)
+# 		await message.edit(content="Done", embed=math_embed)
 
-	@math_solve.error
-	async def math_error(self, ctx, error):
-		if isinstance(error, discord.DiscordException):
-			await ctx.send("There occurred an unknown error. Please wait and try again later.")
-		await self.client.owner.send(error)
+# 	@math_solve.error
+# 	async def math_error(self, ctx, error):
+# 		if isinstance(error, discord.DiscordException):
+# 			await ctx.send("There occurred an unknown error. Please wait and try again later.")
+# 		await self.client.owner.send(error)
 
 
 	@commands.hybrid_command(
@@ -312,7 +310,7 @@ a math problem solver that explains solution of a given math problem.'},
 		)
 	@discord.app_commands.describe(user="The user id or @mention to get info about them")
 	@commands.guild_only()
-	async def user_info(self, ctx: commands.Context, *, user: discord.User=None):
+	async def user_info(self, ctx: commands.Context, *, user: discord.User|None=None):
 		"""Shows info about a discord user"""
 		if user is None:
 			return await ctx.send(
@@ -357,7 +355,7 @@ a math problem solver that explains solution of a given math problem.'},
 		"""Repeats a text"""
 		if ctx.interaction:
 			return await ctx.interaction.response.send_message(content=f"`{text}`")
-		with  contextlib.suppress(
+		with contextlib.suppress(
 			discord.errors.HTTPException,
 			discord.errors.Forbidden,
 			discord.errors.NotFound
@@ -492,14 +490,14 @@ a math problem solver that explains solution of a given math problem.'},
 		)
 	@discord.app_commands.describe(text="The text that is going to be encrypted")
 	@commands.guild_only()
-	async def cryptography_(self, ctx: commands.Context, *, text: str=None):
+	async def cryptography_(self, ctx: commands.Context, *, text: str=""):
 		"""Encrypts and transforms a given text into a secret code."""
 		if not ctx.interaction:
 			try:
 				await ctx.message.delete()
 			except (discord.errors.HTTPException, discord.errors.Forbidden):
 				await ctx.send(":x: I need Manage Messages Permission to delete your message!", delete_after=6)
-		if text is None:
+		if not text:
 			return await ctx.send(":x: Please try again providing the text you want to encrypt!", delete_after=7)
 		if len(text) > 1900:
 			return await ctx.send(":x: Please make sure that your text doesn't contain more than 1900 characters!", delete_after=8)

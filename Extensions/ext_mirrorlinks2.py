@@ -601,7 +601,7 @@ class MirrorFiles(commands.Cog):
 
     @commands.command(aliases=["cs"], hidden=True)
     @commands.is_owner()
-    async def cleanup(self, ctx, user: discord.User=None):
+    async def cleanup(self, ctx, user: discord.User|None=None):
         folders = listdir(f"{curdir}/downloads/")
         if not folders:
             return await ctx.send(":warning: No files in downloads!")
@@ -621,27 +621,29 @@ class MirrorFiles(commands.Cog):
         await view.wait()
         if view.value is None:
             return await msg.delete()
-        if view.value == False:
+        elif view.value == False:
             return await ctx.send("Cancelled!")
-        emb.description = f"{self.client.infinity_emoji} Cleaning..."
-        await msg.edit(embed=emb)
-        await asleep(2) #| Not sure if this rate limit handling is necessary
-        if user:
-            user_directory = f'{curdir}/downloads/{user.id}/'
-            if file_count:=len(listdir(user_directory)):
-                rmtree(user_directory)
-                emb.description = f"Cleared {file_count} files of {user}. :thumbsup:"
+        else:
+            emb.description = f"{self.client.infinity_emoji} Cleaning..."
+            await msg.edit(embed=emb)
+            await asleep(2) #| Not sure if this rate limit handling is necessary
+            if user:
+                user_directory = f'{curdir}/downloads/{user.id}/'
+                if file_count:=len(listdir(user_directory)):
+                    rmtree(user_directory)
+                    emb.description = f"Cleared {file_count} files of {user}. :thumbsup:"
+                else:
+                    emb.description = f"No mirrored files by {user}"
+                await msg.edit(embed=emb)
             else:
-                emb.description = f"No mirrored files by {user}"
-            return await msg.edit(embed=emb)
-        user_count = len(folders)
-        file_count = 0
-        for folder in folders:
-            directory = f"{curdir}/downloads/{folder}"
-            file_count+=len(listdir(directory))
-            rmtree(directory)
-        emb.description = f"Removed total {file_count} files of {user_count} users successfully :thumbsup:"
-        return await msg.edit(embed=emb)
+                user_count = len(folders)
+                file_count = 0
+                for folder in folders:
+                    directory = f"{curdir}/downloads/{folder}"
+                    file_count+=len(listdir(directory))
+                    rmtree(directory)
+                emb.description = f"Removed total {file_count} files of {user_count} users successfully :thumbsup:"
+                await msg.edit(embed=emb)
 
 
 auth_app_thread = Thread(target=authorization_flow_handler.run, kwargs={'port': 1080})

@@ -3,7 +3,6 @@ aiodns
 better-profanity
 discord.py
 googletrans
-openai
 praw
 psutil
 python-dotenv

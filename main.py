@@ -21,9 +21,9 @@ from bot_ui import PageButtons
 import traceback
 from time import time
 import math
-from os import environ, listdir, chdir, path
+from os import environ, listdir, chdir, path, name as kernel
 import typing
-from json import loads, load,  dump
+from json import load,  dump
 import discord
 from discord.ext import commands
 import io
@@ -31,10 +31,12 @@ from dotenv import load_dotenv
 import contextlib
 from textwrap import indent
 import logging
-from asyncio import sleep as asleep
+from asyncio import sleep as asleep, set_event_loop_policy, WindowsSelectorEventLoopPolicy
 # import subprocess
 # from threading import Thread
 
+if kernel=='nt':
+	set_event_loop_policy(WindowsSelectorEventLoopPolicy())
 
 load_dotenv()
 
@@ -43,13 +45,15 @@ chdir(dirpath)
 
 # Setting up logger
 handler = logging.FileHandler(
-	filename='program_logs.log',
-	encoding='utf-8',
-	mode='w'
+		filename='program_logs.log',
+		encoding='utf-8',
+		mode='w'
 	)
 formatter = logging.Formatter(
 	'%(asctime)s:%(levelname)s:%(name)s: %(message)s'
 	)
+
+handler.setFormatter(formatter)
 discord.utils.setup_logging(
 	handler=handler,
 	level=logging.INFO,
@@ -57,13 +61,11 @@ discord.utils.setup_logging(
 	root=True
 	)
 
-# Some constants
+
 TOKEN = environ.get("SECRET_TOKEN_VAR")
-# Setting up necessary Intents
-INTENTS = discord.Intents.all()
 
 
-cogs = [cog[:-3] for cog in listdir("./Extensions/") if cog.startswith("ext") and cog.endswith(".py")]
+cogs = [cog[:-3] for cog in listdir("Extensions/") if cog.startswith("ext") and cog.endswith(".py")]
 
 class TechnoWizard(commands.Bot):
 # The Bot class, But I have added extra methods so that I can use them globally across all files of the project
@@ -75,6 +77,7 @@ class TechnoWizard(commands.Bot):
 		self.infinity_emoji = None
 		self.owner = None
 		self.note_channel = None
+
 		super(TechnoWizard,
 			self
 		).__init__(
@@ -82,7 +85,7 @@ class TechnoWizard(commands.Bot):
 			strip_after_prefix=True,
 			case_insensitive=True,
 			description=None,
-			intents=INTENTS,
+			intents=discord.Intents.all(),
 			root_logger=False,
 			help_command=None,
 			**options
@@ -211,6 +214,17 @@ class TechnoWizard(commands.Bot):
 		# return await ctx.send(err.message)
 		if isinstance(err, commands.BotMissingPermissions):
 			return await ctx.send(":x: I don't have enough permission to perform this task!")
+		elif isinstance(err, commands.NoPrivateMessage):
+			await ctx.send(":x: Please use commands in server channels only!")
+		elif isinstance(err, commands.NotOwner):
+			return await ctx.send(":warning: :x: This command is available for the owner only!")
+		elif isinstance(err, (discord.errors.HTTPException)):
+			if err.status not in (403, 440):
+				raise err
+			else:
+				return None
+		elif isinstance(err, commands.CommandOnCooldown):
+			return await ctx.send(f"\U0000274C `This command is on cooldown. Please try again after {math.ceil(err.retry_after)} seconds!")
 		elif isinstance(
 			err,
 			(
@@ -225,17 +239,6 @@ class TechnoWizard(commands.Bot):
 			)
 			):
 			return None
-		elif isinstance(err, commands.NoPrivateMessage):
-			await ctx.send(":x: Please use commands in server channels only!")
-		elif isinstance(err, commands.NotOwner):
-			return await ctx.send(":warning: :x: This command is available for the owner only!")
-		elif isinstance(err, (discord.errors.HTTPException)):
-			if err.status not in (403, 440):
-				raise err
-			else:
-				return None
-		elif isinstance(err, commands.CommandOnCooldown):
-			return await ctx.send(f"\U0000274C `This command is on cooldown. Please try again after {math.ceil(err.retry_after)} seconds!")
 		else:
 			await self.dm_error_logs(err=err)
 			await ctx.send(":warning: An unknown error occurred. The owner has been informed about the error!")
@@ -325,7 +328,7 @@ async def on_message(text: discord.Message):
 		if client.user.mentioned_in(text):
 			prefix = await client.get_server_prefix(text)
 			await text.channel.send(
-				f"My prefix in this server is:`\t**`{prefix}`**\n`Type '{prefix}help' to get commands list."
+				f"My prefix in this server is: {prefix} \nType '{prefix}help' to get commands list."
 				)
 		return await client.process_commands(text)
 	else:
@@ -354,8 +357,6 @@ async def servers(ctx):
 	await ctx.send(
 		view=PageButtons(embeds=embs) if len(embs) > 1 else None
 	)
-
-
 
 
 @client.command(aliases=["announce", "anc"])

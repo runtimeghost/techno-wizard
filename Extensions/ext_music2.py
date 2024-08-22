@@ -21,7 +21,7 @@ import discord
 from os import environ
 import typing
 from bot_ui import *
-import lyricsgenius
+# import lyricsgenius
 from contextlib import suppress
 import re
 from yt_dlp import YoutubeDL
@@ -54,12 +54,12 @@ class Music(commands.Cog):
 
 	def __init__(self, client: commands.Bot):
 		self.client = client
-		self.lyrics_searcher = lyricsgenius.Genius(
-			access_token=environ.get("LYRICS_API"),
-			timeout=20,
-			verbose=False,
-			response_format='plain'
-		)
+		# self.lyrics_searcher = lyricsgenius.Genius(
+		# 	access_token=environ.get("LYRICS_API"),
+		# 	timeout=20,
+		# 	verbose=False,
+		# 	response_format='plain'
+		# )
 		self.queue = wavelink.Queue()
 		self.ytdl_client = YoutubeDL(
 			{
@@ -87,15 +87,17 @@ class Music(commands.Cog):
 		elif isinstance(error, HTTPError):
 			if error.status==403:
 				return await ctx.send(":x: Error: 403 client error!")
-		else: return None
+		else:
+			return None
 
 	async def connect_voice_node(self):
-		node = wavelink.Node(
-			uri="http://localhost:2333",
-			password="youshallnotpass",
-			)
 		self.wavenode = await wavelink.Pool.connect(
-			nodes=[node],
+			nodes=[
+				wavelink.Node(
+					uri="http://20.83.145.171:2333",
+					password="youshallnotpass",
+				)
+			],
 			client=self.client,
 			cache_capacity=None
 			)
@@ -138,10 +140,10 @@ class Music(commands.Cog):
 			else:
 				return (mins*60 + secs)*1000
 
-	async def add_next(self, ctx: commands.Context, source: typing.Union[wavelink.Playlist, wavelink.Playable]):
+	async def add_next(self, ctx: commands.Context, source: typing.Union[wavelink.Playlist, wavelink.Playable]) -> str|None:
 		vc = ctx.voice_client
 		if not source:
-			return False
+			return None
 		if isinstance(source, wavelink.Playlist):
 			for song in source:
 				song.extras = wavelink.ExtrasNamespace({"requester": str(ctx.author), "skips": list(), "channel_id": ctx.channel.id})
@@ -197,7 +199,7 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 			if stop:
 				with suppress(AttributeError):
 					vc.current.extras.skips.clear()
-				await vc.stop(force=True)
+				await vc.skip(force=True)
 			if destroy:
 				vc.queue.mode = wavelink.QueueMode.normal
 				await vc.disconnect()
@@ -222,7 +224,7 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 
 		await self.clean_up(player, stop=True, destroy=True)
 		await self.client.owner.send(
-			f"on_wavelink_Track_Exception triggered,\n{payload.exception}\n\n{player}\n{payload.original}"
+			f"on_wavelink_Track_Exception triggered,\n{payload.exception}\n\n{player}\n{payload.track}"
 			)
 
 	@commands.Cog.listener()
@@ -255,6 +257,7 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 			channel = ctx.author.voice.channel
 			await channel.connect(cls=wavelink.Player, self_deaf=True)
 			vc: wavelink.Player = ctx.voice_client
+			vc.inactive_timeout = 300
 			vc.auto_queue = wavelink.AutoPlayMode.disabled
 			vc.ctx = ctx
 			vc.controller = None
@@ -295,16 +298,20 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 		else:
 			await ctx.typing()
 		try:
-			tracks: wavelink.Playable = await wavelink.Playable.search(song)
+			tracks: wavelink.Search = await wavelink.Playable.search(song, source=wavelink.TrackSource.YouTube)
 		except wavelink.LavalinkLoadException as e:
 			return await ctx.send(":x: " + str(e))
-
-		if not await self.add_next(ctx, tracks):
+		track_added = await self.add_next(ctx, tracks)
+		if track_added is None:
+			return await ctx.send(
+				f":warning: No song found '{song}'!"
+			)
+		elif not track_added:
 			return await ctx.send(
 				f":x: Already playing this song! Use '{ctx.prefix}loop' to start looping over current song!"
-				)
+			)
 
-	## Neeeds fixing
+	## Neeeds fix
 	@commands.hybrid_command(
 		aliases=[
 		'playfavs', 'playfav', 'playstarred',
@@ -1006,7 +1013,7 @@ Links expire {discord.utils.format_dt(datetime.datetime.now()+datetime.timedelta
 		if number_of_votes < required_votes:
 			return await ctx.send(f":track_next: {skip_msg} Need {required_votes-number_of_votes} more to skip.")
 		await ctx.send(f":track_next: {skip_msg} Skipping...")
-		await self.clean_up(ctx.voice_client)
+		await self.clean_up(ctx.voice_client, stop=True)
 
 
 	@commands.hybrid_command(
