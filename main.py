@@ -335,7 +335,6 @@ async def on_message(text: discord.Message):
 	else:
 		return None
 
-
 @client.command(name="sl", aliases=["s-l", "servers", "server-list"], hidden=True)
 @commands.guild_only()
 @commands.is_owner()

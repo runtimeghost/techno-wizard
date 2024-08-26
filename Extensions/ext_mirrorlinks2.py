@@ -646,7 +646,7 @@ class MirrorFiles(commands.Cog):
                 await msg.edit(embed=emb)
 
 
-auth_app_thread = Thread(target=authorization_flow_handler.run, kwargs={'port': 1080})
+auth_app_thread = Thread(target=authorization_flow_handler.run, kwargs={'port': 8000})
 auth_app_thread.daemon = True
 
 

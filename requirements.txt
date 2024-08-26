@@ -13,4 +13,5 @@ typing_extensions
 yt-dlp
 google-auth-oauthlib
 google-auth-httplib2
+google-generativeai
 flask

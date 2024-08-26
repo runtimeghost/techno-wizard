@@ -818,27 +818,28 @@ Use {ctx.prefix}queue to know the index of the song that you want to remove!")
 	@discord.app_commands.describe(index="The index no. of the song from your favourites (`index = -1` means remove all)")
 	async def removefavourite(self, ctx, index: int=0):
 		"""Remove a song from your favourites"""
-		if index < -1 or index == 0:
-			return await ctx.send(
-			f"Please provide a valid index number. Use `{ctx.prefix}favourites` to know the index numbers"
-		)
-		with open('./database/favourite_tracks.json') as favfile:
-			favs = json.load(favfile)
-		try:
-			if index == -1:
-				favs.clear()
-			else:
-				rmvd = favs[str(ctx.author.id)].pop(index-1)
-		except (IndexError, KeyError):
-			return await ctx.send(f":x: No song at index {index} of your favourites!")
-		else:
-			with open('./database/favourite_tracks.json', 'w') as favfile:
-				json.dump(favs, favfile, indent=4)
-			if index > 0:
-				msg = f':ballot_box_with_check: Removed \'{rmvd["title"]}\' from your favourites!'
-			else:
-				msg = "Cleared all songs from your favourites"
-			return await ctx.channel.send(msg)
+		return await ctx.send("This command is broken and will be fixed soon.")
+		# if index < -1 or index == 0:
+		# 	return await ctx.send(
+		# 	f"Please provide a valid index number. Use `{ctx.prefix}favourites` to know the index numbers"
+		# )
+		# with open('./database/favourite_tracks.json') as favfile:
+		# 	favs = json.load(favfile)
+		# try:
+		# 	if index == -1:
+		# 		favs.clear()
+		# 	else:
+		# 		rmvd = favs[str(ctx.author.id)].pop(index-1)
+		# except (IndexError, KeyError):
+		# 	return await ctx.send(f":x: No song at index {index} of your favourites!")
+		# else:
+		# 	with open('./database/favourite_tracks.json', 'w') as favfile:
+		# 		json.dump(favs, favfile, indent=4)
+		# 	if index > 0:
+		# 		msg = f':ballot_box_with_check: Removed \'{rmvd["title"]}\' from your favourites!'
+		# 	else:
+		# 		msg = "Cleared all songs from your favourites"
+		# 	return await ctx.channel.send(msg)
 
 
 	@commands.hybrid_command(
@@ -847,37 +848,38 @@ Use {ctx.prefix}queue to know the index of the song that you want to remove!")
 			)
 	async def favourites(self, ctx):
 		"""See what's in your favourite list"""
-		with open('./database/favourite_tracks.json') as favfile:
-			favs = json.load(favfile)
-		try:
-			if not favs[str(ctx.author.id)]:
-				return await ctx.send(":warning: You have nothing in your favourites!")
-		except KeyError:
-			return await ctx.send(":warning: Your favourite songs list is empty!")
-		else:
-			pager = commands.Paginator(
-						prefix=f'{ctx.author.name}, the following songs are in your favourites:\n',
-						suffix=None,
-						max_size=1900,
-						linesep='\n'
-					)
-			for x, song in enumerate(favs[str(ctx.author.id)]):
-				pager.add_line(f'__{x+1}__| {song["title"]}')
-			embs = [
-				discord.Embed(
-					title='Favourites \U0001F31F',
-					description=page,
-					color=discord.Color.random(),
-					timestamp=discord.utils.utcnow()
-					).set_footer(text=self.client.user.name) for page in pager.pages
-					]
-			return await ctx.send(
-					embed=embs[0],
-					view=PageButtons(
-						embeds=embs,
-						timeout=240
-						) if len(embs) > 1 else discord.utils.MISSING
-				)
+		return await ctx.send("This command is broken and will be fixed soon.")
+		# with open('./database/favourite_tracks.json') as favfile:
+		# 	favs = json.load(favfile)
+		# try:
+		# 	if not favs[str(ctx.author.id)]:
+		# 		return await ctx.send(":warning: You have nothing in your favourites!")
+		# except KeyError:
+		# 	return await ctx.send(":warning: Your favourite songs list is empty!")
+		# else:
+		# 	pager = commands.Paginator(
+		# 				prefix=f'{ctx.author.name}, the following songs are in your favourites:\n',
+		# 				suffix=None,
+		# 				max_size=1900,
+		# 				linesep='\n'
+		# 			)
+		# 	for x, song in enumerate(favs[str(ctx.author.id)]):
+		# 		pager.add_line(f'__{x+1}__| {song["title"]}')
+		# 	embs = [
+		# 		discord.Embed(
+		# 			title='Favourites \U0001F31F',
+		# 			description=page,
+		# 			color=discord.Color.random(),
+		# 			timestamp=discord.utils.utcnow()
+		# 			).set_footer(text=self.client.user.name) for page in pager.pages
+		# 			]
+		# 	return await ctx.send(
+		# 			embed=embs[0],
+		# 			view=PageButtons(
+		# 				embeds=embs,
+		# 				timeout=240
+		# 				) if len(embs) > 1 else discord.utils.MISSING
+		# 		)
 
 
 	@commands.hybrid_command(
@@ -906,63 +908,64 @@ Use {ctx.prefix}queue to know the index of the song that you want to remove!")
 	@discord.app_commands.describe(url="Url of the video from YouTube")
 	async def send_audio_video_url(self, ctx: commands.Context, *, url: typing.Optional[str]=None):
 		"""Try to download an audio from YouTube and send it to this channel"""
-		if url is None:
-			if not ctx.voice_client or not ctx.voice_client.playing:
-				return await ctx.send(":x: Please play a song or try again providing a youtube video url!")
-			else:
-				url = ctx.voice_client.current.uri
-		if self.YOUTUBE_URL.match(url):
-			emb = discord.Embed(
-				title="Downloading from YouTube",
-				description=f"{self.client.infinity_emoji} Trying to download `{url}`",
-				colour=discord.Colour.blue(),
-				timestamp=discord.utils.utcnow()
-				)
-			emb.set_footer(text=self.client.user.name)
-			msg = await ctx.send(embed=emb)
-		elif self.YOUTUBE_PLAYLIST_URL.match(url):
-			return await ctx.send(":x: Youtube playlist url is not supported! Try again providing a video url.")
-		else:
-			return await ctx.send(":x: The url is not a YouTube video Url!")
-		try:
-			info = self.ytdl_client.extract_info(url, download=False, process=False)
-			if info is None or all('format_id' not in item for item in info['formats']):
-				emb.title = "Not found!"
-				emb.description = ":warning: The given url doesn't seem to return any result from Youtube!"
-				return await msg.edit(embed=emb)
-			else:
-				emb.title = "Media type!"
-				emb.description = "Choose a media type from the followings"
-			view = SelectResolution(timeout=30, author=ctx.author)
-			await msg.edit(embed=emb, view=view)
-			await view.wait()
-			if view.itag_value not in ('140', '22'):
-				emb.title = "Failed"
-				emb.description = "**You did not select any choice!**"
-				emb.color = discord.Colour.red()
-				for item in view.children:
-					item.style = discord.ButtonStyle.grey
-					item.disabled = True
-				return await msg.edit(embed=emb, view=view)
-			vid = next(item for item in info['formats'] if item['format_id']==view.itag_value)
-		except (KeyError, StopIteration):
-			emb.title = "Item not found!"
-			emb.description = ":x: Can't find this item in YouTube!"
-			emb.colour = discord.Colour.red()
-			await msg.edit(embed=emb)
-		else:
-			emb.title = "Downloaded item from YouTube"
-			emb.description = f"""
-:white_check_mark: {ctx.author.mention} Successfully Downloaded `{info["title"]}`\n
-**Click [here]({vid['url']}) to open it in browser and then click on the `three dots` menu \
-besides the :loud_sound: icon to get download option.**\n
-Links expire {discord.utils.format_dt(datetime.datetime.now()+datetime.timedelta(hours=5), style='R')} from now."""
-			emb.colour = discord.Colour.green()
-			emb.set_thumbnail(url=info['thumbnails'][-1]['url'])
-			try:
-				await msg.edit(embed=emb)
-			except discord.errors.NotFound:
-				await ctx.channel.send(embed=emb)
+		return await ctx.send("This command is broken and will be fixed soon.")
+# 		if url is None:
+# 			if not ctx.voice_client or not ctx.voice_client.playing:
+# 				return await ctx.send(":x: Please play a song or try again providing a youtube video url!")
+# 			else:
+# 				url = ctx.voice_client.current.uri
+# 		if self.YOUTUBE_URL.match(url):
+# 			emb = discord.Embed(
+# 				title="Downloading from YouTube",
+# 				description=f"{self.client.infinity_emoji} Trying to download `{url}`",
+# 				colour=discord.Colour.blue(),
+# 				timestamp=discord.utils.utcnow()
+# 				)
+# 			emb.set_footer(text=self.client.user.name)
+# 			msg = await ctx.send(embed=emb)
+# 		elif self.YOUTUBE_PLAYLIST_URL.match(url):
+# 			return await ctx.send(":x: Youtube playlist url is not supported! Try again providing a video url.")
+# 		else:
+# 			return await ctx.send(":x: The url is not a YouTube video Url!")
+# 		try:
+# 			info = self.ytdl_client.extract_info(url, download=False, process=False)
+# 			if info is None or all('format_id' not in item for item in info['formats']):
+# 				emb.title = "Not found!"
+# 				emb.description = ":warning: The given url doesn't seem to return any result from Youtube!"
+# 				return await msg.edit(embed=emb)
+# 			else:
+# 				emb.title = "Media type!"
+# 				emb.description = "Choose a media type from the followings"
+# 			view = SelectResolution(timeout=30, author=ctx.author)
+# 			await msg.edit(embed=emb, view=view)
+# 			await view.wait()
+# 			if view.itag_value not in ('140', '22'):
+# 				emb.title = "Failed"
+# 				emb.description = "**You did not select any choice!**"
+# 				emb.color = discord.Colour.red()
+# 				for item in view.children:
+# 					item.style = discord.ButtonStyle.grey
+# 					item.disabled = True
+# 				return await msg.edit(embed=emb, view=view)
+# 			vid = next(item for item in info['formats'] if item['format_id']==view.itag_value)
+# 		except (KeyError, StopIteration):
+# 			emb.title = "Item not found!"
+# 			emb.description = ":x: Can't find this item in YouTube!"
+# 			emb.colour = discord.Colour.red()
+# 			await msg.edit(embed=emb)
+# 		else:
+# 			emb.title = "Downloaded item from YouTube"
+# 			emb.description = f"""
+# :white_check_mark: {ctx.author.mention} Successfully Downloaded `{info["title"]}`\n
+# **Click [here]({vid['url']}) to open it in browser and then click on the `three dots` menu \
+# besides the :loud_sound: icon to get download option.**\n
+# Links expire {discord.utils.format_dt(datetime.datetime.now()+datetime.timedelta(hours=5), style='R')} from now."""
+# 			emb.colour = discord.Colour.green()
+# 			emb.set_thumbnail(url=info['thumbnails'][-1]['url'])
+# 			try:
+# 				await msg.edit(embed=emb)
+# 			except discord.errors.NotFound:
+# 				await ctx.channel.send(embed=emb)
 
 
 	@commands.hybrid_command(

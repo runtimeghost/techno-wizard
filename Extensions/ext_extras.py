@@ -9,23 +9,25 @@ import psutil
 from typing import Optional
 import better_profanity
 from json import loads
-import praw
+# import praw
 from random import randint
 import discord
 from discord.ext import commands
 import time
 from dotenv import load_dotenv
-import googletrans
+# import googletrans
 from os import environ
 import platform
 from endecrypt import encode, decode
 # import openai
+import google.generativeai as genai
 
 
 load_dotenv()
 
 better_profanity.profanity.load_censor_words()
 # openai.api_key = environ.get("OPENAI_API_KEY")
+genai.configure(api_key=environ.get("GOOGLE_GEMINI_API"))
 class Extras(commands.Cog):
 
 	def __init__(self, client):
@@ -39,8 +41,10 @@ class Extras(commands.Cog):
 		# 	username="snakexenzia01",
 		# 	password=environ.get('REDDIT_PASSWORD')
 		# )
+		self.gemini = genai.GenerativeModel("gemini-1.5-flash")
+		self.gemini_history: dict[list[dict]] = {}
 		self.alpha = """zA<9yB(x8'C[wD@v7E`uF-tG\\6&sH*r,IqJ}p5$KoLn)M>m.Nl%4O~kP?jQi:R3!hS{g+Tf"Ue2/Vd;Wc_1Xb#Y]a0Z"""  # the super secret Algorithm xD
-		self.translator = googletrans.Translator()
+		# self.translator = googletrans.Translator()
 
 
 	@commands.Cog.listener()
@@ -453,7 +457,7 @@ class Extras(commands.Cog):
 		)
 	@discord.app_commands.describe(text="The text that we are going to convert. DM the code to decode")
 	@commands.guild_only()
-	async def convert_to_binary(self, ctx, *, text: str=None):
+	async def convert_to_binary(self, ctx, *, text: None|str=None):
 		"""Converts a given text into binary."""
 		if not ctx.interaction:
 			try:
