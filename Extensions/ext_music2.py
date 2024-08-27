@@ -94,7 +94,7 @@ class Music(commands.Cog):
 		self.wavenode = await wavelink.Pool.connect(
 			nodes=[
 				wavelink.Node(
-					uri="http://20.83.145.171:2333",
+					uri=environ.get("LAVALINK_URL"),
 					password="youshallnotpass",
 				)
 			],
@@ -149,7 +149,7 @@ class Music(commands.Cog):
 				song.extras = wavelink.ExtrasNamespace({"requester": str(ctx.author), "skips": list(), "channel_id": ctx.channel.id})
 			count = vc.queue.put(source)
 			await ctx.channel.send(
-				f":white_check_mark: Added {count} songs to the playlist!"
+				f":white_check_mark: Added {count} songs to the playlist! Requested by: {ctx.author.mention}"
 				)
 		else:
 			song: wavelink.Playable = source[0]
@@ -158,7 +158,7 @@ class Music(commands.Cog):
 			if vc.playing:
 				if vc.current == song:
 					return False
-				await ctx.channel.send(f":white_check_mark: Added '{song.title}' to the playlist.")
+				await ctx.channel.send(f":white_check_mark: Added '{song.title}' to the playlist! Requested by: {ctx.author.mention}")
 			if not vc.playing:
 				first_song = vc.queue.get()
 				await vc.play(first_song, replace=False, add_history=False)
