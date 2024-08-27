@@ -28,6 +28,8 @@ load_dotenv()
 better_profanity.profanity.load_censor_words()
 # openai.api_key = environ.get("OPENAI_API_KEY")
 genai.configure(api_key=environ.get("GOOGLE_GEMINI_API"))
+
+
 class Extras(commands.Cog):
 
 	def __init__(self, client):
@@ -41,7 +43,7 @@ class Extras(commands.Cog):
 		# 	username="snakexenzia01",
 		# 	password=environ.get('REDDIT_PASSWORD')
 		# )
-		self.gemini = genai.GenerativeModel("gemini-1.5-flash")
+		self.ai = genai.GenerativeModel("gemini-1.5-flash")
 		self.gemini_history: dict[list[dict]] = {}
 		self.alpha = """zA<9yB(x8'C[wD@v7E`uF-tG\\6&sH*r,IqJ}p5$KoLn)M>m.Nl%4O~kP?jQi:R3!hS{g+Tf"Ue2/Vd;Wc_1Xb#Y]a0Z"""  # the super secret Algorithm xD
 		# self.translator = googletrans.Translator()
