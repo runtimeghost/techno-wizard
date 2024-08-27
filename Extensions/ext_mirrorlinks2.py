@@ -2,7 +2,7 @@
 
 # Rewriting mirror extension with with more commands and Cancel support
 
-from os import remove, curdir, path, listdir, mkdir
+from os import remove, curdir, path, listdir, mkdir, environ
 from io import BytesIO
 from shutil import rmtree
 from json import dumps, dump, load
@@ -645,7 +645,7 @@ class MirrorFiles(commands.Cog):
                 await msg.edit(embed=emb)
 
 
-auth_app_thread = Thread(target=authorization_flow_handler.run, kwargs={'port': 8000})
+auth_app_thread = Thread(target=authorization_flow_handler.run, kwargs={'host':environ.get("FLASK_HOST"), 'port': 8000})
 auth_app_thread.daemon = True
 
 
