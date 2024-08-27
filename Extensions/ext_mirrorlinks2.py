@@ -76,9 +76,10 @@ def auth_flow():
             """
         )
 
-def refreshed_drive_creds(user_id: int):
+def refreshed_drive_creds(user_id: int|str):
 
     """Gets refreshed Tokens for google drive access"""
+
     token = f"{curdir}/database/drive_creds/{user_id}.json"
     creds = Credentials.from_authorized_user_file(token, SCOPES)
     while True:
@@ -283,7 +284,7 @@ File name: {self.name}
                 infos = [
                     {
                         "name": "File ID",
-                        "value": f"**`{self.id}`**"
+                        "value": f"`{self.id}`"
                     },
                     {
                         "name": "Server",
@@ -307,7 +308,7 @@ File name: {self.name}
                 tillnow = 0
                 async with aopen(self.filepath, "wb") as this_file:
                     rate_limiting_time = self.ctx.bot.loop.time()
-                    async for data in resp.content.iter_chunked(8190):
+                    async for data in resp.content.iter_chunked(8192):
                         tillnow += len(data)
                         await this_file.write(data)
                         if self.ctx.bot.loop.time() - rate_limiting_time > 4:
@@ -363,13 +364,11 @@ File name: {self.name}
         data.add_field("file", open(self.filepath, "rb"))
         async with self.session.post(
             "https://www.googleapis.com/upload/drive/v3/files",
-            data=data, headers=headers,
-            params={"uploadType": "multipart"},
+            data=data, headers=headers, params={"uploadType": "multipart"},
             ) as resp:
             self.uploaded_file_info = await resp.json()
         emb.description = f""":white_check_mark: {self.ctx.author.mention} File successfully mirrored
-File: `{self.uploaded_file_info.get("name")}`
-"""
+File: `{self.uploaded_file_info.get("name")}`"""
         emb.insert_field_at(1, name="File Type", value=self.uploaded_file_info.get("mimeType") or "<unknown>")
         view = discord.ui.View(timeout=None)
         view.add_item(discord.ui.Button(
@@ -466,7 +465,7 @@ class MirrorFiles(commands.Cog):
         """Login to grant access to your google drive"""
         if path.exists(f'{curdir}/database/drive_creds/{ctx.author.id}.json'):
             return await ctx.send(":ballot_box_with_check: You are already logged in to google drive. Use `/logout` to logout.")
-        flow = Flow.from_client_secrets_file("credentials.json", SCOPES, redirect_uri='http://redirectmeto.com/https://172.208.72.42:1080')
+        flow = Flow.from_client_secrets_file("credentials.json", SCOPES, redirect_uri='http://technowizard.eastus.cloudapp.azure.com:8000')
         auth_flows[ctx.author.id] = flow
         embed = discord.Embed(
             title='Drive Login',

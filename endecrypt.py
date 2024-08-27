@@ -154,8 +154,8 @@ dict7 = {
 
 '''
 Data spiritual rebirth have always been widely used utility and one 
-among them can be conversion of a string to it’s binary equivalent. 
-Let’s discuss certain ways in which this can be done.
+among them can be conversion of a string to it's binary equivalent. 
+Let's discuss certain ways in which this can be done.
 
 encodeion is the strategy by which data is changed over into mystery
 code that shrouds the data's actual importance. The study of encoding
@@ -257,6 +257,3 @@ def decode(argv,opti):
 		argv1 = argv
 		result = decode1(argv1) 
 		return result
-
-
-
