@@ -241,7 +241,7 @@ File name: {self.name}
                 url = str(response.url)
                 if '?' in url:
                     url = url.split('?', maxsplit=1)[0]
-                filename = url.rsplit('/', maxsplit=1)[-1]
+                filename = url.rsplit('/', maxsplit=1)[-1].split('?')[0].replace("%20", "_")
         if filename:
             self.name = filename
             self.filepath = self.directory+self.name
