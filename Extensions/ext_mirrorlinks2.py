@@ -254,7 +254,8 @@ File name: {self.name}
         head = {'User-agent': "Mozilla/5.0 (X11; Linux x86_64; rv:39.0) Gecko/20100101 Firefox/39.0"}
         async with self.session.get(self.url, headers=head, chunked=True) as resp:
 
-            if "text/html" in resp.headers.get("content-type"):
+            content_type = resp.headers.get("content-type")
+            if content_type is not None and "text/html" in content_type:
                 if self.ctx.interaction:
                     await self.ctx.send(
                     ":x: **The url you provided returned a webpage! Direct download link of the file is required.**",
@@ -584,8 +585,8 @@ class MirrorFiles(commands.Cog):
 
     @commands.command(aliases=['del', 'delete'], hidden=True)
     @commands.is_owner()
-    async def delete_a_file(self, ctx, url):
-        fileId = url.split('/')[5]
+    async def delete_a_file(self, ctx, drive_url):
+        fileId = drive_url.split('/')[5]
         headers = {
             'Authorization': f"Bearer {refreshed_drive_creds(ctx.author.id).token}",
             "User-agent": "Mozilla/5.0 (X11; Linux x86_64; rv:39.0) Gecko/20100101 Firefox/39.0"}
