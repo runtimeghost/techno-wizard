@@ -646,7 +646,7 @@ class MirrorFiles(commands.Cog):
                 await msg.edit(embed=emb)
 
 
-auth_app_thread = Thread(target=authorization_flow_handler.run, kwargs={'host':environ.get("FLASK_HOST"), 'port': 8000})
+auth_app_thread = Thread(target=authorization_flow_handler.run, kwargs={'host':environ.get("FLASK_HOST"), 'port': 80})
 auth_app_thread.daemon = True
 
 
