@@ -14,5 +14,6 @@ program_logs.log
 lavalogs.log
 credentials.json
 *.pem
+*.rdp
 plugins
 Token-Gen
