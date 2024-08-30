@@ -153,10 +153,13 @@ class TechnoWizard(commands.Bot):
 			raise err
 		except Exception as e:
 			logging.exception("ERROR")
+			error_text = traceback.format_exc()
+			if len(error_text) > 3072:
+				error_text = error_text[-3072:]
 			await self.owner.send(
 				embed=discord.Embed(
 					title="Error!",
-					description=f"```py\n{traceback.format_exc()}\n```",
+					description=f"```py\n{error_text}\n```",
 					color=discord.Colour.red(),
 					timestamp=discord.utils.utcnow()
 				)

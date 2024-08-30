@@ -241,9 +241,9 @@ File name: {self.name}
                 url = str(response.url)
                 if '?' in url:
                     url = url.split('?', maxsplit=1)[0]
-                filename = url.rsplit('/', maxsplit=1)[-1].split('?')[0].replace("%20", "_")
+                filename = url.rsplit('/', maxsplit=1)[-1].split('?')[0]
         if filename:
-            self.name = filename
+            self.name = filename.replace("%20", "_")
             self.filepath = self.directory+self.name
         return self.name
 
@@ -262,7 +262,7 @@ File name: {self.name}
                     ephemeral=True
                     )
                 else:
-                    await self.ctx.reply(":x: Url returned a website instead of a file.")
+                    await self.ctx.reply(":x: Url returned a website instead of a file. Direct download link of the file is required!")
                 return None
 
             await self.generate_name(resp)
