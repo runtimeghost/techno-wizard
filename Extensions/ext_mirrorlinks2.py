@@ -495,7 +495,7 @@ class MirrorFiles(commands.Cog):
         )
     @discord.app_commands.describe(url="The direct download link of the file")
     async def mirror(self, ctx: commands.Context, url: str=""):
-        if not path.exists(f"{curdir}/database/drive_creds/{ctx.author.id}"):
+        if not path.exists(f"{curdir}/database/drive_creds/{ctx.author.id}.json"):
             return await ctx.send(":x: Requires G-Drive access for mirroring into personal drive. Please use `/login` command in my inbox.")
         if not url:
             return await ctx.send(":x: Please try again providing a direct download link of the file!")
