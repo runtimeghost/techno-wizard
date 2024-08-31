@@ -426,7 +426,7 @@ File: `{self.uploaded_file_info.get("name")}`"""
 
 async def check(ctx):
     if not path.exists(f"{curdir}/database/drive_creds/{ctx.author.id}.json"):
-        await ctx.send(":x: Google drive login required! Use `/login` command in the bot's inbox (DM)")
+        await ctx.send(":x: Google drive login required! Use `/login` command in my inbox (DM)")
         return False
     else:
         return True
@@ -463,7 +463,7 @@ class MirrorFiles(commands.Cog):
     @commands.hybrid_command(usage='login')
     @commands.dm_only()
     async def login(self, ctx):
-        """Login to grant access to your google drive"""
+        """Login to grant access for mirroring to your personal Google drive"""
         if path.exists(f'{curdir}/database/drive_creds/{ctx.author.id}.json'):
             return await ctx.send(":ballot_box_with_check: You are already logged in to google drive. Use `/logout` to logout.")
         flow = Flow.from_client_secrets_file("credentials.json", SCOPES, redirect_uri='http://techno-wizard.eastus.cloudapp.azure.com')
@@ -494,7 +494,9 @@ class MirrorFiles(commands.Cog):
         usage="mirror <direct download link>"
         )
     @discord.app_commands.describe(url="The direct download link of the file")
-    async def mirror(self, ctx, url: str=""):
+    async def mirror(self, ctx: commands.Context, url: str=""):
+        if not path.exists(f"{curdir}/database/drive_creds/{ctx.author.id}"):
+            return await ctx.send(":x: Requires G-Drive access for mirroring into personal drive. Please use `/login` command in my inbox.")
         if not url:
             return await ctx.send(":x: Please try again providing a direct download link of the file!")
         if msg:=self.unsupported(url):
@@ -520,6 +522,8 @@ class MirrorFiles(commands.Cog):
     )
     @discord.app_commands.describe(url="The public url of the google drive file")
     async def clone(self, ctx, *, url: str=None):
+        if not path.exists(f"{curdir}/database/drive_creds/{ctx.author.id}"):
+            return await ctx.send(":x: Requires G-Drive access for mirroring into personal drive. Please use `/login` command in my inbox.")
         if "drive.google.com/" not in url:
             return await ctx.send(f":warning: This command is only for google drive links! Please use `{ctx.prefix}mirror` command instead!")
         if inter:=ctx.interaction:

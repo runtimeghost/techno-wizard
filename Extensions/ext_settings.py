@@ -83,7 +83,7 @@ class Settings(commands.Cog):
     @bots_settings.command(name="changeprefix", aliases=['c-p', 'prefix', 'cp', 'new-prefix'], description='Used to change prefix')
     @commands.has_permissions(manage_channels=True)
     async def change_prefix(self, ctx, new_prefix: str|None = None):
-        """Change the bot's prefix"""
+        """Change the command prefix"""
         if new_prefix is None:
             prefix = ctx.prefix
             return await ctx.send(f"""```\nUsage: {prefix}settings prefix <new_prefix>\nDescription: Used to change prefix \

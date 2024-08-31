@@ -297,7 +297,7 @@ class Extras(commands.Cog):
 		)
 	@commands.guild_only()
 	async def ping_(self, ctx: commands.Context):
-		"""Can be used to check the bot's latency"""
+		"""Can be used to check the connection latency"""
 		latency = self.client.latency * 1000
 		return await ctx.send(
 			embed=discord.Embed(
