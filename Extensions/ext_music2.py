@@ -18,14 +18,14 @@ from discord.ext import commands
 import wavelink
 from aiohttp.web_exceptions import HTTPError
 import discord
-from os import environ
+from os import environ, curdir
 import typing
 from bot_ui import *
 # import lyricsgenius
 from contextlib import suppress
 import re
 from yt_dlp import YoutubeDL
-import datetime
+# import datetime
 
 
 #| Setting up environment Variables
@@ -60,7 +60,6 @@ class Music(commands.Cog):
 		# 	verbose=False,
 		# 	response_format='plain'
 		# )
-		self.queue = wavelink.Queue()
 		self.ytdl_client = YoutubeDL(
 			{
 				'quiet': True,
@@ -95,7 +94,7 @@ class Music(commands.Cog):
 			nodes=[
 				wavelink.Node(
 					uri=environ.get("LAVALINK_URL"),
-					password="youshallnotpass",
+					password=environ.get("LAVALINK_PASS"),
 				)
 			],
 			client=self.client,
@@ -226,6 +225,13 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 		await self.client.owner.send(
 			f"on_wavelink_Track_Exception triggered,\n{payload.exception}\n\n{player}\n{payload.track}"
 			)
+	
+	@commands.Cog.listener()
+	async def on_wavelink_track_stuck(self, payload: wavelink.TrackStuckEventPayload):
+		player: wavelink.Player = payload.player
+
+		await player.ctx.channel.send(":warning: Error playing the audio. Skipping...")
+		await player.skip(force=True)
 
 	@commands.Cog.listener()
 	async def on_wavelink_track_end(self, payload: wavelink.TrackEndEventPayload):
@@ -332,7 +338,7 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 			return await ctx.send(":x: Your Favourites list is empty!")
 		else:
 			if inter:=ctx.interaction:
-				await inter.response.send_message(f"{self.client.infinity_emoji} `Getting your favourite tracks...", delete_after=3)
+				await inter.response.send_message(f"{self.client.infinity_emoji} Getting your favourite tracks...", delete_after=3)
 			else:
 				await ctx.typing()
 			if index <= 0:
@@ -753,7 +759,7 @@ Use {ctx.prefix}queue to know the index of the song that you want to remove!")
 		try:
 			if "%" in level:
 				level = level.strip("% ")
-			level = float(level)
+			level = int(level)
 		except ValueError:
 			return await ctx.send(":x: Please try again providing a valid volume level!")
 		if level > 100:
@@ -790,7 +796,7 @@ Use {ctx.prefix}queue to know the index of the song that you want to remove!")
 		"""Add the currently playing song to your favourites list"""
 		if not ctx.voice_client.playing:
 			return await ctx.send(":x: Nothing is playing currently!")
-		with open('./database/favourite_tracks.json', 'r') as favfile:
+		with open(f'{curdir}/database/favourite_tracks.json', 'r') as favfile:
 			favs = json.load(favfile)
 		try:
 			if len(favs[str(ctx.author.id)]) >= 20:
@@ -806,7 +812,7 @@ Use {ctx.prefix}queue to know the index of the song that you want to remove!")
 				{"title": discord.utils.remove_markdown(ctx.voice_client.current.title[:90]), "data": ctx.voice_client.current.raw_data}
 				)
 		finally:
-			with open('./database/favourite_tracks.json', 'w') as favfile:
+			with open(f'{curdir}/database/favourite_tracks.json', 'w') as favfile:
 				json.dump(favs, favfile, indent=4)
 		return await ctx.send(":star: Added current track to your favourites!")
 
@@ -818,28 +824,27 @@ Use {ctx.prefix}queue to know the index of the song that you want to remove!")
 	@discord.app_commands.describe(index="The index no. of the song from your favourites (`index = -1` means remove all)")
 	async def removefavourite(self, ctx, index: int=0):
 		"""Remove a song from your favourites"""
-		return await ctx.send("This command is broken and will be fixed soon.")
-		# if index < -1 or index == 0:
-		# 	return await ctx.send(
-		# 	f"Please provide a valid index number. Use `{ctx.prefix}favourites` to know the index numbers"
-		# )
-		# with open('./database/favourite_tracks.json') as favfile:
-		# 	favs = json.load(favfile)
-		# try:
-		# 	if index == -1:
-		# 		favs.clear()
-		# 	else:
-		# 		rmvd = favs[str(ctx.author.id)].pop(index-1)
-		# except (IndexError, KeyError):
-		# 	return await ctx.send(f":x: No song at index {index} of your favourites!")
-		# else:
-		# 	with open('./database/favourite_tracks.json', 'w') as favfile:
-		# 		json.dump(favs, favfile, indent=4)
-		# 	if index > 0:
-		# 		msg = f':ballot_box_with_check: Removed \'{rmvd["title"]}\' from your favourites!'
-		# 	else:
-		# 		msg = "Cleared all songs from your favourites"
-		# 	return await ctx.channel.send(msg)
+		if index < -1 or index == 0:
+			return await ctx.send(
+			f"Please provide a valid index number. Use `{ctx.prefix}favourites` to know the index numbers"
+		)
+		with open(f'{curdir}/database/favourite_tracks.json') as favfile:
+			favs = json.load(favfile)
+		try:
+			if index == -1:
+				favs.clear()
+			else:
+				rmvd = favs[str(ctx.author.id)].pop(index-1)
+		except (IndexError, KeyError):
+			return await ctx.send(f":x: No song at index {index} of your favourites!")
+		else:
+			with open(f'{curdir}/database/favourite_tracks.json', 'w') as favfile:
+				json.dump(favs, favfile, indent=4)
+			if index > 0:
+				msg = f':ballot_box_with_check: Removed \'{rmvd["title"]}\' from your favourites!'
+			else:
+				msg = "Cleared all songs from your favourites"
+			return await ctx.channel.send(msg)
 
 
 	@commands.hybrid_command(
@@ -848,38 +853,38 @@ Use {ctx.prefix}queue to know the index of the song that you want to remove!")
 			)
 	async def favourites(self, ctx):
 		"""See what's in your favourite list"""
-		return await ctx.send("This command is broken and will be fixed soon.")
-		# with open('./database/favourite_tracks.json') as favfile:
-		# 	favs = json.load(favfile)
-		# try:
-		# 	if not favs[str(ctx.author.id)]:
-		# 		return await ctx.send(":warning: You have nothing in your favourites!")
-		# except KeyError:
-		# 	return await ctx.send(":warning: Your favourite songs list is empty!")
-		# else:
-		# 	pager = commands.Paginator(
-		# 				prefix=f'{ctx.author.name}, the following songs are in your favourites:\n',
-		# 				suffix=None,
-		# 				max_size=1900,
-		# 				linesep='\n'
-		# 			)
-		# 	for x, song in enumerate(favs[str(ctx.author.id)]):
-		# 		pager.add_line(f'__{x+1}__| {song["title"]}')
-		# 	embs = [
-		# 		discord.Embed(
-		# 			title='Favourites \U0001F31F',
-		# 			description=page,
-		# 			color=discord.Color.random(),
-		# 			timestamp=discord.utils.utcnow()
-		# 			).set_footer(text=self.client.user.name) for page in pager.pages
-		# 			]
-		# 	return await ctx.send(
-		# 			embed=embs[0],
-		# 			view=PageButtons(
-		# 				embeds=embs,
-		# 				timeout=240
-		# 				) if len(embs) > 1 else discord.utils.MISSING
-		# 		)
+		# return await ctx.send("This command is broken and will be fixed soon.")
+		with open('./database/favourite_tracks.json') as favfile:
+			favs = json.load(favfile)
+		try:
+			if not favs[str(ctx.author.id)]:
+				return await ctx.send(":warning: You have nothing in your favourites!")
+		except KeyError:
+			return await ctx.send(":warning: Your favourite songs list is empty!")
+		else:
+			pager = commands.Paginator(
+						prefix=f'{ctx.author.name}, the following songs are in your favourites:\n',
+						suffix=None,
+						max_size=1900,
+						linesep='\n'
+					)
+			for x, song in enumerate(favs[str(ctx.author.id)]):
+				pager.add_line(f'__{x+1}__| {song["title"]}')
+			embs = [
+				discord.Embed(
+					title='Favourites \U0001F31F',
+					description=page,
+					color=discord.Color.random(),
+					timestamp=discord.utils.utcnow()
+					).set_footer(text=self.client.user.name) for page in pager.pages
+				]
+			return await ctx.send(
+					embed=embs[0],
+					view=PageButtons(
+						embeds=embs,
+						timeout=240
+						) if len(embs) > 1 else discord.utils.MISSING
+				)
 
 
 	@commands.hybrid_command(

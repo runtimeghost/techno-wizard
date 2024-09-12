@@ -82,12 +82,11 @@ def refreshed_drive_creds(user_id: int|str):
 
     token = f"{curdir}/database/drive_creds/{user_id}.json"
     creds = Credentials.from_authorized_user_file(token, SCOPES)
-    while True:
-        if creds.expired or not creds.valid:
-            creds.refresh(Request())
-            with open(token, 'w') as tokenfile:
-                tokenfile.write(creds.to_json())
-        return creds
+    if creds.expired or not creds.valid:
+        creds.refresh(Request())
+        with open(token, 'w') as tokenfile:
+            tokenfile.write(creds.to_json())
+    return creds
 
 
 # DRIVE_CREDS = refreshed_drive_creds()
@@ -461,11 +460,12 @@ class MirrorFiles(commands.Cog):
 
 
     @commands.hybrid_command(usage='login')
-    @commands.dm_only()
-    async def login(self, ctx):
+    async def login(self, ctx: commands.Context):
         """Login to grant access for mirroring to your personal Google drive"""
         if path.exists(f'{curdir}/database/drive_creds/{ctx.author.id}.json'):
             return await ctx.send(":ballot_box_with_check: You are already logged in to google drive. Use `/logout` to logout.")
+        if not ctx.interaction:
+            return await ctx.send(":x: Use `/login` command to login")
         flow = Flow.from_client_secrets_file("credentials.json", SCOPES, redirect_uri='http://techno-wizard.eastus.cloudapp.azure.com')
         auth_flows[ctx.author.id] = flow
         embed = discord.Embed(
@@ -477,10 +477,9 @@ class MirrorFiles(commands.Cog):
         view = discord.ui.View(timeout=None)
         view.add_item(discord.ui.Button(label='Login', url=flow.authorization_url(prompt='consent', access_type='offline', state=str(ctx.author.id))[0]))
 
-        return await ctx.send(embed=embed, view=view)
+        return await ctx.interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
     @commands.hybrid_command(usage='logout')
-    @commands.dm_only()
     async def logout(self, ctx):
         """Logout and revoke access from your google drive account"""
         if not path.exists(f'{curdir}/database/drive_creds/{ctx.author.id}.json'):
