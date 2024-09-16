@@ -15,6 +15,7 @@ from discord.ext import commands
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
+from google.auth.exceptions import RefreshError
 from aiohttp import FormData, ClientSession, ClientTimeout, client_exceptions
 from aiofiles import open as aopen
 from asyncio import sleep as asleep
@@ -448,8 +449,8 @@ class MirrorFiles(commands.Cog):
     async def cog_command_error(self, ctx, error):
         if isinstance(error, client_exceptions.InvalidURL):
             await ctx.send(":x: The download url is invalid!")
-        elif isinstance(error, commands.PrivateMessageOnly):
-            return await ctx.send(":x: This command is available in DM (inbox) only!")
+        elif isinstance(error, RefreshError):
+            await ctx.send(":x: Google drive was logged out automatically for safety! Please use `/login` command again.")
 
 
     def unsupported(self, url) -> str|None:
@@ -520,6 +521,7 @@ class MirrorFiles(commands.Cog):
         usage="clone <google_drive_file_link>"
     )
     @discord.app_commands.describe(url="The public url of the google drive file")
+    @commands.guild_only()
     async def clone(self, ctx, *, url: str=None):
         if not path.exists(f"{curdir}/database/drive_creds/{ctx.author.id}"):
             return await ctx.send(":x: Requires G-Drive access for mirroring into personal drive. Please use `/login` command in my inbox.")
@@ -538,6 +540,7 @@ class MirrorFiles(commands.Cog):
         usage="leech <direct_download_link>"
         )
     @discord.app_commands.describe(url="The direct download link of the file")
+    @commands.guild_only()
     async def leech(self, ctx, *, url: str=None):
         if not url:
             return await ctx.send(":x: Please try again providing the download link!")
@@ -569,6 +572,7 @@ class MirrorFiles(commands.Cog):
 
     @commands.hybrid_command(description="Cancel a running mirror task", usage="cancel <file_id>")
     @discord.app_commands.describe(file_id="The id of the file that is being mirrored currently")
+    @commands.guild_only()
     async def cancel(self, ctx, *, file_id: str=""):
         if not file_id:
             # Don't know what to close :) 

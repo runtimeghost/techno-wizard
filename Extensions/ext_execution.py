@@ -7,7 +7,6 @@ import math
 import threading
 import asyncio
 import typing
-import functools
 import logging
 import time
 import json
@@ -38,7 +37,6 @@ class ExecCmd(discord.ext.commands.Cog):
             "threading": threading,
             "asyncio": asyncio,
             "typing": typing,
-            "functools": functools,
             "logging": logging,
             "time": time,
             "json": json,

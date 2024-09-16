@@ -255,6 +255,7 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 			aliases=["connect", "j"],
 			usage='join'
 			)
+	@commands.guild_only()
 	async def join_voice(self, ctx: commands.Context):
 		"""Joins the voice channel you're connected to."""
 		if ctx.author.voice is None:
@@ -284,6 +285,7 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 			aliases=["p", "song", "yt", "youtube", "spotify"],
 			usage='play <song title or url>'
 			)
+	@commands.guild_only()
 	@discord.app_commands.describe(
 		song="The title or the url of the song (Spotify & SoundCloud urls are also supported)"
 		)
@@ -325,6 +327,7 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 		],
 		usage="playfavs [item index from your favourite list]"
 	)
+	@commands.guild_only()
 	@commands.check(voice_state)
 	async def playfavourites(self, ctx, index: typing.Optional[int]=0):
 		"""Play songs from your favourites"""
@@ -401,6 +404,7 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 		usage="searchyt <search term>"
 		)
 	@discord.app_commands.describe(search_term="The term to search in YouTube")
+	@commands.guild_only()
 	@commands.check(voice_state)
 	async def searchyt(self, ctx, *, search_term: str=""):
 		"""Search the given term in YouTube and let you choose a song"""
@@ -460,6 +464,7 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 			usage="replay"
 			)
 	@commands.check(voice_state)
+	@commands.guild_only()
 	@commands.has_guild_permissions(manage_messages=True)
 	async def replay(self, ctx):
 		"""Instantly restart the currently playing song"""
@@ -475,6 +480,7 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 			)
 	@discord.app_commands.describe(timestamp="The position of the timestamp to set. e.g: 01:53")
 	@commands.check(voice_state)
+	@commands.guild_only()
 	@commands.has_guild_permissions(manage_messages=True)
 	async def seek(self, ctx, *, timestamp=None):
 		"""Seek forward to a given timestamp position of a song"""
@@ -535,6 +541,7 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 			aliases=["ly", "lyrix"],
 			usage="lyrics [song title]"
 			)
+	@commands.guild_only()
 	#@discord.app_commands.describe(song="The name of ths song to search lyrics for (not url/link)")
 	#@commands.check(voice_state)
 	async def lyrics(self, ctx): #, *, song: str=""):
@@ -570,6 +577,7 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 			aliases=["stop"],
 			usage="pause"
 			)
+	@commands.guild_only()
 	@commands.check(voice_state)
 	async def pause(self, ctx):
 		"""Pause the currently playing song"""
@@ -585,6 +593,7 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 	@commands.hybrid_command(
 			aliases=["resum", "res", "cont", "continue"],
 			usage="resume")
+	@commands.guild_only()
 	@commands.check(voice_state)
 	async def resume(self, ctx):
 		"""Resume the paused song!"""
@@ -601,6 +610,7 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 			aliases=["np", "now", "timeline", "current"],
 			usage="nowplaying"
 			)
+	@commands.guild_only()
 	async def nowplaying(self, ctx: commands.Context):
 		"""Shows position of the timeline of the currently playing song"""
 		if ctx.voice_client is None or not ctx.voice_client.playing:
@@ -650,6 +660,7 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 			aliases=["playlist", "q", "songlist", "songs", "list"],
 			usage="queue"
 			)
+	@commands.guild_only()
 	async def queue(self, ctx):
 		"""Display what's next in the song queue"""
 		if not ctx.voice_client.queue:
@@ -690,6 +701,7 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 			aliases=["shuffleq", "shuffle", "shuffleplaylist"],
 			usage="shuffleq"
 			)
+	@commands.guild_only()
 	@commands.check(voice_state)
 	@commands.has_guild_permissions(manage_messages=True)
 	async def shufflequeue(self, ctx):
@@ -709,6 +721,7 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 	@discord.app_commands.describe(
 		index="Use /queue to know the index of the song you want to remove"
 		)
+	@commands.guild_only()
 	@commands.check(voice_state)
 	@commands.has_guild_permissions(manage_messages=True)
 	async def remove(self, ctx, index: typing.Optional[int]=None):
@@ -734,6 +747,7 @@ Use {ctx.prefix}queue to know the index of the song that you want to remove!")
 			aliases=["clearq", "clearsongs", "clearall", "cq", "clearplaylist"],
 			usage="clearqueue"
 			)
+	@commands.guild_only()
 	@commands.check(voice_state)
 	@commands.has_guild_permissions(manage_messages=True)
 	async def clearqueue(self, ctx):
@@ -753,6 +767,7 @@ Use {ctx.prefix}queue to know the index of the song that you want to remove!")
 			usage="volume <any number from 1 to 100>"
 			)
 	@discord.app_commands.describe(level="The volume level (should be between 1 and 100)")
+	@commands.guild_only()
 	@commands.check(voice_state)
 	async def volume(self, ctx, level: str="75"):
 		"""Set the volume level for songs"""
@@ -778,6 +793,7 @@ Use {ctx.prefix}queue to know the index of the song that you want to remove!")
 			aliases=["bass", "boost"],
 			usage="bassboost"
 			)
+	@commands.guild_only()
 	@commands.check(voice_state)
 	async def bassboost(self, ctx):
 		"""Toggles the equalizer to bassboost mode"""
@@ -791,6 +807,7 @@ Use {ctx.prefix}queue to know the index of the song that you want to remove!")
 			aliases=["fav", "favorite", "star", "addfav"],
 			usage="favourite"
 			)
+	@commands.guild_only()
 	@commands.check(voice_state)
 	async def favourite(self, ctx):
 		"""Add the currently playing song to your favourites list"""
@@ -822,6 +839,7 @@ Use {ctx.prefix}queue to know the index of the song that you want to remove!")
 			usage="rmfav <index number of the song from your favourites list>"
 			)
 	@discord.app_commands.describe(index="The index no. of the song from your favourites (`index = -1` means remove all)")
+	@commands.guild_only()
 	async def removefavourite(self, ctx, index: int=0):
 		"""Remove a song from your favourites"""
 		if index < -1 or index == 0:
@@ -851,6 +869,7 @@ Use {ctx.prefix}queue to know the index of the song that you want to remove!")
 			aliases=['favs', 'starred', 'stars', 'favlist', 'favorites'],
 			usage='favourites'
 			)
+	@commands.guild_only()
 	async def favourites(self, ctx):
 		"""See what's in your favourite list"""
 		# return await ctx.send("This command is broken and will be fixed soon.")
@@ -891,6 +910,7 @@ Use {ctx.prefix}queue to know the index of the song that you want to remove!")
 			aliases=["autoreplay"],
 			usage='loop'
 			)
+	@commands.guild_only()
 	@commands.check(voice_state)
 	async def loop(self, ctx):
 		"""Toggles the "auto repeat current song" switch"""
@@ -911,6 +931,7 @@ Use {ctx.prefix}queue to know the index of the song that you want to remove!")
 			usage="ytdownload [song url from YouTube]"
 			)
 	@discord.app_commands.describe(url="Url of the video from YouTube")
+	@commands.guild_only()
 	async def send_audio_video_url(self, ctx: commands.Context, *, url: typing.Optional[str]=None):
 		"""Try to download an audio from YouTube and send it to this channel"""
 		return await ctx.send("This command is broken and will be fixed soon.")
@@ -978,6 +999,7 @@ Use {ctx.prefix}queue to know the index of the song that you want to remove!")
 			aliases=["threed", "3d", "stereo-mode"],
 			usage="stereo"
 			)
+	@commands.guild_only()
 	@commands.check(voice_state)
 	async def stereo_mode(self, ctx):
 		"""Toggles the 3D effect"""
@@ -991,6 +1013,7 @@ Use {ctx.prefix}queue to know the index of the song that you want to remove!")
 			aliases=['rf', 'nofilters', 'disablefilters'],
 			usage='resetfilters'
 			)
+	@commands.guild_only()
 	@commands.check(voice_state)
 	async def resetfilters(self, ctx):
 		"""Reset all the applied audio filters"""
@@ -1007,6 +1030,7 @@ Use {ctx.prefix}queue to know the index of the song that you want to remove!")
 			aliases=["vskip", "next", "vnext", "voteskip"],
 			usage='skip'
 			)
+	@commands.guild_only()
 	@commands.check(voice_state)
 	async def skip(self, ctx):
 		"""Vote to skip the current song"""
@@ -1031,6 +1055,7 @@ Use {ctx.prefix}queue to know the index of the song that you want to remove!")
 	@discord.app_commands.describe(
 		index="Use /queue to know the index of the song you want to skip upto"
 		)
+	@commands.guild_only()
 	@commands.check(voice_state)
 	@commands.has_guild_permissions(manage_messages=True)
 	async def skipto(self, ctx, index: typing.Optional[int]=None):
@@ -1055,6 +1080,7 @@ Use /queue to know the index of the song that you want to skip upto!")
 			aliases=["fs", "forcenext", "fnext", "fskip"],
 			usage='forceskip'
 			)
+	@commands.guild_only()
 	@commands.check(voice_state)
 	@commands.has_guild_permissions(manage_messages=True)
 	async def forceskip(self, ctx):
@@ -1080,6 +1106,7 @@ Use /queue to know the index of the song that you want to skip upto!")
 			usage='leave'
 			)
 	@commands.has_guild_permissions(manage_messages=True)
+	@commands.guild_only()
 	@commands.check(voice_state)
 	async def leave_vc(self, ctx: commands.Context):
 		"""Disconnect from the connected voice channel"""
