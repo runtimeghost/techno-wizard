@@ -1,4 +1,4 @@
-
+<h1><b>Discontinued</b></h1>
 <h1><i><b>Techno Wizard discord bot</b></i></h1>
 <hr/>
 

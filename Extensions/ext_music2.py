@@ -212,6 +212,8 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 		player = payload.player
 		if not player:
 			return None
+		if player.paused:
+			await player.pause(False)
 		if player.queue.mode == wavelink.QueueMode.normal:
 			await self.send_player_embed(player)
 
@@ -234,6 +236,10 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 		await player.skip(force=True)
 
 	@commands.Cog.listener()
+	async def on_wavelink_inactive_player(self, player: wavelink.Player):
+		await self.clean_up(player, stop=True, destroy=True)
+
+	@commands.Cog.listener()
 	async def on_wavelink_track_end(self, payload: wavelink.TrackEndEventPayload):
 		player = payload.player
 		if not player:
@@ -245,7 +251,7 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 				next_song = player.queue.get()
 				await player.play(next_song, replace=False, add_history=False)
 				if player.queue.mode == wavelink.QueueMode.loop and payload.reason!='finished':
-						await self.send_player_embed(player)
+					await self.send_player_embed(player)
 		except wavelink.QueueEmpty:
 			player.queue.mode = wavelink.QueueMode.normal
 			await self.clean_up(player)
@@ -265,7 +271,6 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 			await channel.connect(cls=wavelink.Player, self_deaf=True)
 			vc: wavelink.Player = ctx.voice_client
 			vc.inactive_timeout = 300
-			vc.auto_queue = wavelink.AutoPlayMode.disabled
 			vc.ctx = ctx
 			vc.controller = None
 			vc.autoplay = wavelink.AutoPlayMode.disabled
@@ -287,7 +292,7 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 			)
 	@commands.guild_only()
 	@discord.app_commands.describe(
-		song="The title or the url of the song (Spotify & SoundCloud urls are also supported)"
+		song="The title or the url of the song (Spotify & SoundCloud urls are not supported currently)"
 		)
 	@commands.check(voice_state)
 	async def play(self, ctx: commands.Context, *, song: str=""):
@@ -605,6 +610,16 @@ Duration: {formatted_time(track.length)} || Volume: {vc.volume}%"""
 			await ctx.voice_client.pause(False)
 			return await ctx.send(":arrow_forward: Resumed the song!")
 
+	@commands.hybrid_command(
+			aliases=['ap', 'auto', 'aplay', "autoqueue", "autoq", "aq"],
+			usage="autoplay"
+	)
+	@commands.guild_only()
+	@commands.check(voice_state)
+	async def autoplay(self, ctx: commands.Context):
+		if not ctx.voice_client.playing:
+			return await ctx.send(":x: Play something first!")
+		if ctx.voice_client.autoplay == 
 
 	@commands.hybrid_command(
 			aliases=["np", "now", "timeline", "current"],
@@ -1073,7 +1088,6 @@ Use /queue to know the index of the song that you want to skip upto!")
 			return await ctx.send(f':x: No song at index {index} in the playlist!')
 		else:
 			await self.clean_up(ctx.voice_client, stop=True)
-
 
 
 	@commands.hybrid_command(
